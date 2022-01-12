@@ -37,24 +37,26 @@ router.get('/:id', (req, res) => {
 })
 
 router.post('/', async (req, res) => {
-    Post.insert(req.body)
-        .then(newPost => {
-            if(!req.body.title || !req.body.contents) {
-                res.status(400).json({
-                    message: 'Please provide title and contents for the post'
-                })
-            } else {
-                // console.log(Post.findById(newPost))
-                // const returnPost = Post.findById(newPost.id)
-                res.status(201).json(newPost)
-            }
+    const { title, contents } = req.body
+    if(!title || !contents) {
+        res.status(400).json({
+            message: 'Please provide title and contents for the post'
         })
-        .catch(err => {
-            res.status(500).json({
-                message: 'There was an error while saving the post to the database',
-                error: err.message
+    } else {
+        Post.insert({title, contents})
+            .then(({ id }) => {
+                return Post.findById(id)
             })
-        })
+            .then(newPost => {
+                res.status(201).json(newPost)
+            })
+            .catch(err => {
+                res.status(500).json({
+                    message: 'There was an error while saving the post to the database',
+                    error: err.message
+                })
+            })
+    }
 })
 
 // router.post('/',async (req, res) => {
@@ -142,5 +144,6 @@ router.get('/:id/comments', (req, res) => {
             })
         })
 })
+
 
 module.exports = router;
